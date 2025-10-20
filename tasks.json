@@ -1,0 +1,14 @@
+[
+  {
+    "description": "Learn rust deeply",
+    "completed": true
+  },
+  {
+    "description": "Learn rust deeply",
+    "completed": true
+  },
+  {
+    "description": "Buy food items",
+    "completed": false
+  }
+]
