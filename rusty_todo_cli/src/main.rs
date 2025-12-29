@@ -1,0 +1,78 @@
+use std::env;
+use std::process;
+use rusty_todo::{AppContext, load_tasks, Command, CommandResult};
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    let command = match parse_args(&args) {
+        Ok(cmd) => cmd,
+        Err(e) => {
+            eprintln!("{}", e);
+            print_usage();
+            process::exit(1);
+        }
+    };
+
+    let tasks = load_tasks().unwrap_or_else(|err| {
+        println!(
+            "Could not load task from file: {}. Starting with an empty list.",
+            err
+        );
+        Vec::new()
+    });
+
+    let mut app = AppContext::new(tasks);
+    match app.execute(command) {
+        Ok(result) => match result {
+            CommandResult::Message(msg) => println!("{}", msg),
+            CommandResult::Tasks(tasks) => {
+                if tasks.is_empty() {
+                    println!("No tasks yet! Add one with the 'add' command.");
+                } else {
+                    println!("--- Your Tasks ---");
+                    for(i, task) in tasks.iter().enumerate() {
+                        let status  = if task.completed { "[x]" } else { "[ ]" };
+                        println!("{} {}: {}", i + 1, status, task.description);
+                    }
+                }
+            }
+        },
+        Err(e) => {
+            eprintln!("Error: {}", e);
+            process::exit(1);
+        }
+    }
+}
+
+
+fn parse_args(args: &[String]) -> Result<Command, String> {
+    if args.len() < 2 {
+        return Err("Invalid command.".to_string());
+    }
+
+    let command_str = &args[1];
+    match command_str.as_str() {
+        "list" => Ok(Command::List),
+        "version" | "-v" | "--version" => Ok(Command::Version),
+        "add" => {
+            let description = args.get(2).cloned().ok_or("Error: 'add' command requires a description.".to_string())?;
+            Ok(Command::Add(description))
+        },
+        "done" => {
+            let id_str = args.get(2).ok_or("Error: 'done' command requires a task ID.".to_string())?;
+            let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
+            Ok(Command::Complete(id))
+        },
+        _ => Err(format!("Error: Unknown command '{}'", command_str)),
+    }
+}
+
+fn print_usage() {
+    println!("--- Rusty Todos ---");
+    println!("Usage: rusty-todos [COMMAND]");
+    println!("\nCommands:");
+    println!("  list              List all tasks");
+    println!("  add “<desc>”      Add a new task");
+    println!("  done <ID>         Complete a task by its ID");
+}
+

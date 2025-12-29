@@ -33,11 +33,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "rusty-todos"
+name = "rusty_todo"
 version = "0.1.0"
 dependencies = [
  "serde",
  "serde_json",
+]
+
+[[package]]
+name = "rusty_todo_cli"
+version = "0.1.0"
+dependencies = [
+ "rusty_todo",
 ]
 
 [[package]]
