@@ -24,10 +24,190 @@ struct Task {
     completed: bool,
 }
 
+// --- STATE MACHINE PATTERN ---
+
+/// Trait defining the behavior each state must implement
+trait AppState {
+
+    /// Handle the current state's logic
+    fn handle(&self, context: &mut AppContext, args: &[String]);
+
+    /// Return the name of the state for debugging
+    fn name(&self) -> &str;
+}
+
+// Context holds the application state and delegates behaviour to the current state
+struct AppContext {
+    tasks: Vec<Task>,
+    state: Box<dyn AppState>,
+}
+
+impl AppContext {
+    /// Create a new context with initial state
+    fn new(tasks: Vec<Task>) -> Self {
+        AppContext {
+            tasks,
+            state: Box::new(IdleState),
+        }
+    }
+
+    /// Transition to a new state
+    fn transition_to(&mut self, state: Box<dyn AppState>) {
+        // Put a guard to make sure you can go from the order of the app states: idle -> list/add/complete
+        println!("[State Transition] -> {}", state.name());
+        self.state = state
+    }
+
+    /// Execute the current state's behavior
+    fn execute(&mut self, args: &[String]) {
+        // Take ownership of the current state, replacing it with a placeholder
+        // This allows us to call handle with a mutable reference to self
+        let current_state = std::mem::replace(&mut self.state, Box::new(CompletedState));
+        current_state.handle(self, args);
+    }
+
+    /// Get tasks reference
+    fn tasks_mut(&mut self) -> &mut Vec<Task> {
+        &mut self.tasks
+    }
+}
+
+/// Initial state - determines which operation to perform
+struct IdleState;
+
+impl AppState for IdleState {
+    fn handle(&self, context: &mut AppContext, args: &[String]) {
+        if args.len() < 2 {
+            print_usage();
+            process::exit(1);
+        }
+
+        let command = &args[1];
+        
+        // Transition to appropriate state based on command
+        match command.as_str() {
+            "list" => context.transition_to(Box::new(ListState)),
+            "add" => context.transition_to(Box::new(AddState)),
+            "done" => context.transition_to(Box::new(CompleteState)),
+            _ => {
+                println!("Error: Unknown command '{}'", command);
+                print_usage();
+                process::exit(1);
+            }
+        }
+        
+        // Execute the new state
+        context.execute(args);
+    }
+
+    fn name(&self) -> &str {
+        "Idle"
+    }
+}
+
+/// State for listing all tasks
+struct ListState;
+
+impl AppState for ListState {
+    fn handle(&self, context: &mut AppContext, _args: &[String]) {
+
+        list_tasks(&context.tasks);
+        context.transition_to(Box::new(CompletedState));
+    }
+
+    fn name(&self) -> &str {
+        "List"
+    }
+}
+
+/// State for adding a new task
+struct AddState;
+
+impl AppState for AddState {
+    fn handle(&self, context: &mut AppContext, args: &[String]) {
+        let description = args.get(2).cloned().unwrap_or_else(|| {
+            println!("Error: 'add' command requires a description.");
+            print_usage();
+            process::exit(1);
+        });
+
+        add_task(context.tasks_mut(), description);
+        context.transition_to(Box::new(SavingState {
+            message: "Task added.".to_string(),
+        }));
+        context.execute(args);
+    }
+
+    fn name(&self) -> &str {
+        "Add"
+    }
+}
+
+/// State for completing a task
+struct CompleteState;
+
+impl AppState for CompleteState {
+    fn handle(&self, context: &mut AppContext, args: &[String]) {
+        let id_str = args.get(2).unwrap_or_else(|| {
+            println!("Error: 'done' command requires a task ID.");
+            print_usage();
+            process::exit(1);
+        });
+
+        let id = id_str.parse::<usize>().unwrap_or_else(|_| {
+            println!("Error: Invalid task ID. Please provide a number.");
+            process::exit(1);
+        });
+
+        complete_task(context.tasks_mut(), id);
+        context.transition_to(Box::new(SavingState {
+            message: "Task marked as complete.".to_string(),
+        }));
+        context.execute(args);
+    }
+
+    fn name(&self) -> &str {
+        "Complete"
+    }
+}
+
+/// State for saving tasks to disk
+struct SavingState {
+    message: String,
+}
+
+impl AppState for SavingState {
+    fn handle(&self, context: &mut AppContext, _args: &[String]) {
+        if let Err(e) = save_tasks(context.tasks_mut()) {
+            println!("Error saving tasks: {}", e);
+            process::exit(1);
+        }
+        println!("{}", self.message);
+        context.transition_to(Box::new(CompletedState));
+    }
+
+    fn name(&self) -> &str {
+        "Saving"
+    }
+}
+
+/// Completed tasks state
+struct CompletedState;
+
+impl AppState for CompletedState {
+    fn handle(&self, _context: &mut AppContext, _args: &[String]) {
+        // Terminal state - nothing to do
+    }
+
+    fn name(&self) -> &str {
+        "Completed"
+    }
+}
+
 // --- MAIN FUNCTION ---
 // This is the entry point of the application. Execution starts here.
 fn main() {
-    let mut tasks = load_tasks().unwrap_or_else(|err| {
+    let tasks = load_tasks().unwrap_or_else(|err| {
         println!(
             "Could not load task from file: {}. Starting with an empty list.",
             err
@@ -35,51 +215,15 @@ fn main() {
         Vec::new() // `Vec::new()`creates a new, empty vector.
     });
 
+    // Parse command-line arguments
     let args: Vec<String> = env::args().collect();
 
-    let command = args.get(1).unwrap_or_else(|| {
-        print_usage();
-        process::exit(1);
-    });
+    // Create the application context with initial state
+    let mut app = AppContext::new(tasks);
 
-    // Use `match`to execute the corect logic based on the command string.
-    match command.as_str() {
-        "list" => list_tasks(&tasks), // Pass an immutable reference to the tasks.
+    // Execute the state machine
+    app.execute(&args);
 
-        "add" => {
-            // The task description should be the argument at index 2.
-            let description = args.get(2).cloned().unwrap_or_else(|| {
-                println!("Error: 'add' command requires a description.");
-                print_usage();
-                process::exit(1);
-            });
-            add_task(& mut tasks, description); // Pass a mutable reference to modify the list.
-            save_and_confirm(&tasks, "Task added.");
-        }
-
-        "done" => {
-            let id_str = args.get(2).unwrap_or_else(|| {
-                println!("Error: Invalid task ID. Please provide a number");
-                process::exit(1);
-            });
-
-            // Parse the ID string into a number. `parse()` returns a `Result`.
-            // Handle the error case where the input isn't a valid number.
-            let id = id_str.parse::<usize>().unwrap_or_else(|_| {
-                println!("Error: Invalid task ID. Please provide a number.");
-                process::exit(1);
-            });
-
-            complete_task(&mut tasks, id);  // Pass a mutable reference to modify the task.
-            save_and_confirm(&tasks, "Task marked as complete.");
-        }
-
-        _=> {
-            println!("Error Unknown command '{}'", command);
-            print_usage();
-            process::exit(1);
-        }
-    }
 }
 
 // Helper functions
@@ -168,17 +312,6 @@ fn save_tasks(tasks: &Vec<Task>) -> Result<(), std::io::Error> {
     Ok(())
 }
 
-/// A small utility function to save tasks and print a confirmation message.
-fn save_and_confirm(tasks: &Vec<Task>, message: &str) {
-    // `if let Err(e) = ...` is a clean way to handle a `Result` when you only
-    // care about the error case.
-    if let Err(e) = save_tasks(tasks) {
-        println!("Error saving tasks: {}", e);
-        process::exit(1);
-    }
-    println!("{}", message);
-}
-
 /// Prints the usage instructions for the application.
 fn print_usage() {
     println!("--- Rusty Todos ---");
@@ -188,3 +321,5 @@ fn print_usage() {
     println!("  add “<desc>”      Add a new task");
     println!("  done <ID>         Complete a task by its ID");
 }
+
+// Lock file when states

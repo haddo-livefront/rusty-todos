@@ -9,6 +9,14 @@
   },
   {
     "description": "Buy food items",
-    "completed": false
+    "completed": true
+  },
+  {
+    "description": "Buy groceries",
+    "completed": true
+  },
+  {
+    "description": "Learn system design",
+    "completed": true
   }
 ]
