@@ -3,6 +3,7 @@
 members = [
     "rusty_todo",
     "rusty_todo_cli",
+    "rusty_todo_jni",
 ]
 resolver = "2"
 

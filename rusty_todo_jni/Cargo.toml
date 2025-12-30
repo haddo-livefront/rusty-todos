@@ -1,0 +1,15 @@
+[package]
+name = "rusty_todo_jni"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at 
+# https://doc.rust-lang.org/cargo/reference/manifest.html
+# Dynamic Library: https://doc.rust-lang.org/reference/linkage.html
+[lib]
+name = "rusty_todo_jni"
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+rusty_todo = { path = "../rusty_todo" }
+jni = { version = "0.21.1", default-features = false }

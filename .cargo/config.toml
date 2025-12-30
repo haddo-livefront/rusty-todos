@@ -1,0 +1,11 @@
+# This is all automated with cargo-ndk
+# In a real application make use of cargo-ndk
+# Note: The paths are specific to my machine and Android SDK version and should be adjusted accordingly. Also the paths are absolute paths.
+[target.aarch64-linux-android]
+linker = "/Users/henry/Library/Android/sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/darwin-x86_64/bin/aarch64-linux-android30-clang"
+[target.armv7-linux-androideabi]
+linker = "/Users/henry/Library/Android/sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/darwin-x86_64/bin/armv7a-linux-androideabi30-clang"
+[target.i686-linux-android]
+linker = "/Users/henry/Library/Android/sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/darwin-x86_64/bin/i686-linux-android30-clang"
+[target.x86_64-linux-android]
+linker = "/Users/henry/Library/Android/sdk/ndk/29.0.14033849/toolchains/llvm/prebuilt/darwin-x86_64/bin/x86_64-linux-android30-clang"
