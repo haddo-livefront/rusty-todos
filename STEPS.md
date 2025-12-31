@@ -28,7 +28,29 @@
    ```
 
 ## 3. Build the rust JNI library
+Run the following commands to build the different targets:
+```sh
+cargo build --target aarch64-linux-android --release && \
+cargo build --target armv7-linux-androideabi --release && \
+cargo build --target i686-linux-android --release && \
+cargo build --target x86_64-linux-android --release
+```
 
+## 4. Integrate it with the android code base
+Create JNI libraries directories for the different ABIs
+```sh
+android/app/src/main/jniLibs
+├── arm64-v8a
+├── armeabi-v7a
+├── x86
+└── x86_64
+```
+
+## 5. Copy the .so files 
+```sh
+cp target/aarch64-linux-android/release/librusty_todo_jni.so android/app/src/main/jniLibs/arm64-v8a/
+cp 
+```
 
 ## Challenges
 

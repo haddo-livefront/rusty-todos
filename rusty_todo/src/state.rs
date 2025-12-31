@@ -3,7 +3,7 @@ use crate::{Task, add_task, complete_task, save_tasks, TodoError, Command, Comma
 // --- STATE MACHINE PATTERN ---
 
 /// Trait defining the behavior each state must implement
-pub trait AppState {
+pub trait AppState: Send {
     /// Handle the current state's logic
     fn handle(&self, context: &mut AppContext) -> Result<CommandResult, TodoError>;
 
@@ -14,8 +14,9 @@ pub trait AppState {
 // Context holds the application state and delegates behaviour to the current state
 pub struct AppContext {
     pub tasks: Vec<Task>,
-    pub state: Box<dyn AppState>,
+    pub state: Box<dyn AppState + Send>,
 }
+
 
 impl AppContext {
     /// Create a new context with initial state
@@ -27,7 +28,7 @@ impl AppContext {
     }
 
     /// Transition to a new state
-    pub fn transition_to(&mut self, state: Box<dyn AppState>) {
+    pub fn transition_to(&mut self, state: Box<dyn AppState + Send>) {
         self.state = state
     }
 
