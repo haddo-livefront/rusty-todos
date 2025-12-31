@@ -4,8 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rustytodos.data.Task
 import com.example.rustytodos.data.TodoRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -17,10 +19,10 @@ data class TodoUiState(
 
 class TodoViewModel(private val todoRepository: TodoRepository) : ViewModel() {
 
-    private val _version = kotlinx.coroutines.flow.MutableStateFlow("")
+    private val _version = MutableStateFlow("")
 
     val uiState: StateFlow<TodoUiState> =
-        kotlinx.coroutines.flow.combine(
+       combine(
             todoRepository.getAllTasksStream(),
             _version
         ) { tasks, ver ->
