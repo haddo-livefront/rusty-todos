@@ -46,10 +46,12 @@ android/app/src/main/jniLibs
 └── x86_64
 ```
 
-## 5. Copy the .so files 
+## 5. Symlink or copy the .so files 
 ```sh
-cp target/aarch64-linux-android/release/librusty_todo_jni.so android/app/src/main/jniLibs/arm64-v8a/
-cp 
+ln -s target/aarch64-linux-android/release/librusty_todo_jni.so android/app/src/main/jniLibs/arm64-v8a/
+ln -s target/armv7-linux-androideabi/release/librusty_todo_jni.so android/app/src/main/jniLibs/armeabi-v7a/
+ln -s target/i686-linux-android/release/librusty_todo_jni.so android/app/src/main/jniLibs/x86/
+ln -s target/x86_64-linux-android/release/librusty_todo_jni.so android/app/src/main/jniLibs/x86_64/
 ```
 
 ## Challenges

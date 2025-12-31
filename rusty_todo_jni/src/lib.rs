@@ -93,6 +93,20 @@ pub extern "system" fn Java_com_example_rustytodos_RustBindings_complete(
 
 #[allow(non_snake_case)]
 #[no_mangle]
+pub extern "system" fn Java_com_example_rustytodos_RustBindings_uncomplete(
+    env: JNIEnv,
+    _class: JClass,
+    id: jlong,
+) -> jstring {
+    // Cast jlong (i64) to usize. Be careful with overflow/casting.
+    let id_usize = id as usize;
+    let output = execute_command(Command::Uncomplete(id_usize));
+    let output_ptr = CString::new(output).unwrap();
+    env.new_string(output_ptr.to_str().unwrap()).expect("Couldn't create java string!").into_raw()
+}
+
+#[allow(non_snake_case)]
+#[no_mangle]
 pub extern "system" fn Java_com_example_rustytodos_RustBindings_version(
     env: JNIEnv,
     _class: JClass,

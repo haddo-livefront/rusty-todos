@@ -40,11 +40,15 @@ class RustTodoRepository(context: Context) : TodoRepository {
     override suspend fun updateTask(task: Task) {
         Log.d("RustTodoRepository", "Updating task id: ${task.id}")
         RustBindings.edit(task.id.toLong(), task.description)
+        refreshTasks()
+    }
+
+    override suspend fun markTask(task: Task) {
         val id = task.id.toLong()
         if (task.completed) {
-             RustBindings.complete(id)
+            RustBindings.complete(id)
         } else {
-             RustBindings.uncomplete(id)
+            RustBindings.uncomplete(id)
         }
         refreshTasks()
     }

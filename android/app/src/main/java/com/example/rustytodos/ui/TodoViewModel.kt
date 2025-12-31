@@ -6,7 +6,6 @@ import com.example.rustytodos.data.Task
 import com.example.rustytodos.data.TodoRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -46,7 +45,7 @@ class TodoViewModel(private val todoRepository: TodoRepository) : ViewModel() {
 
     fun toggleTaskCompletion(task: Task, completed: Boolean) {
         viewModelScope.launch {
-            todoRepository.updateTask(task.copy(completed = completed))
+            todoRepository.markTask(task.copy(completed = completed))
         }
     }
 
