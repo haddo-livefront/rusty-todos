@@ -11,17 +11,32 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 // State for the UI
-data class TodoUiState(val tasks: List<Task> = listOf())
+data class TodoUiState(
+    val tasks: List<Task> = listOf(),
+    val version: String = ""
+)
 
 class TodoViewModel(private val todoRepository: TodoRepository) : ViewModel() {
 
+    private val _version = kotlinx.coroutines.flow.MutableStateFlow("")
+
     val uiState: StateFlow<TodoUiState> =
-        todoRepository.getAllTasksStream().map { TodoUiState(it) }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = TodoUiState()
-            )
+        kotlinx.coroutines.flow.combine(
+            todoRepository.getAllTasksStream(),
+            _version
+        ) { tasks, ver ->
+            TodoUiState(tasks, ver)
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = TodoUiState()
+        )
+
+    init {
+        viewModelScope.launch {
+            _version.value = todoRepository.getVersion()
+        }
+    }
 
     fun addTask(description: String) {
         viewModelScope.launch {

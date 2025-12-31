@@ -2,6 +2,7 @@ package com.example.rustytodos.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,7 +17,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DismissDirection
 import androidx.compose.material3.DismissValue
 import androidx.compose.material3.Divider
-
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -38,9 +38,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.rustytodos.R
 
 import com.example.rustytodos.data.Task
 
@@ -70,6 +72,7 @@ fun TodoApp(
     ) { innerPadding ->
         TodoList(
             tasks = uiState.tasks,
+            version = uiState.version,
             onTaskChecked = viewModel::toggleTaskCompletion,
             onTaskDeleted = viewModel::deleteTask,
             modifier = Modifier.padding(innerPadding)
@@ -91,12 +94,14 @@ fun TodoApp(
 @Composable
 fun TodoList(
     tasks: List<Task>,
+    version: String,
     onTaskChecked: (Task, Boolean) -> Unit,
     onTaskDeleted: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    LazyColumn(modifier = modifier.fillMaxSize()) {
-        items(
+    Column(modifier = modifier.fillMaxSize()) {
+        LazyColumn(modifier = Modifier.weight(1f)) {
+            items(
             items = tasks,
             key = { it.id }
         ) { task ->
@@ -144,6 +149,18 @@ fun TodoList(
             )
             Divider()
         }
+    }
+    
+    if (version.isNotEmpty()) {
+        Text(
+            text = stringResource(R.string.rusty_todos_version, version),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(8.dp)
+        )
+    }
     }
 }
 

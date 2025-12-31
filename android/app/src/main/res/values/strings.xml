@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Rusty Todos</string>
+    <string name="rusty_todos_version">Powered by RustyTodo v%s</string>
 </resources>
