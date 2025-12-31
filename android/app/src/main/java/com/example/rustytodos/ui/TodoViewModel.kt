@@ -56,6 +56,13 @@ class TodoViewModel(private val todoRepository: TodoRepository) : ViewModel() {
         }
     }
 
+    fun editTask(task: Task, newDescription: String) {
+        viewModelScope.launch {
+            // Use updateTask which we modified to handle editing
+            todoRepository.updateTask(task.copy(description = newDescription))
+        }
+    }
+
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }

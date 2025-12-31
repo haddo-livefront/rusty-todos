@@ -28,6 +28,9 @@ pub enum Command {
     List,
     Add(String),
     Complete(usize),
+    Uncomplete(usize),
+    Delete(usize),
+    Edit(usize, String),
     Version,
 }
 
@@ -45,6 +48,36 @@ pub fn complete_task(tasks: &mut Vec<Task>, id: usize) -> Result<(), TodoError> 
     let index = id - 1;
     if let Some(task) = tasks.get_mut(index) {
         task.completed = true;
+        Ok(())
+    } else {
+        Err(TodoError::TaskNotFound(id))
+    }
+}
+
+pub fn uncomplete_task(tasks: &mut Vec<Task>, id: usize) -> Result<(), TodoError> {
+    let index = id - 1;
+    if let Some(task) = tasks.get_mut(index) {
+        task.completed = false;
+        Ok(())
+    } else {
+        Err(TodoError::TaskNotFound(id))
+    }
+}
+
+pub fn delete_task(tasks: &mut Vec<Task>, id: usize) -> Result<(), TodoError> {
+    let index = id - 1;
+    if index < tasks.len() {
+        tasks.remove(index);
+        Ok(())
+    } else {
+        Err(TodoError::TaskNotFound(id))
+    }
+}
+
+pub fn edit_task(tasks: &mut Vec<Task>, id: usize, description: String) -> Result<(), TodoError> {
+    let index = id - 1;
+    if let Some(task) = tasks.get_mut(index) {
+        task.description = description;
         Ok(())
     } else {
         Err(TodoError::TaskNotFound(id))

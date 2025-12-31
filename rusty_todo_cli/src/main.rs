@@ -63,6 +63,22 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
             Ok(Command::Complete(id))
         },
+        "undone" => {
+            let id_str = args.get(2).ok_or("Error: 'undone' command requires a task ID.".to_string())?;
+            let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
+            Ok(Command::Uncomplete(id))
+        },
+        "delete" => {
+            let id_str = args.get(2).ok_or("Error: 'delete' command requires a task ID.".to_string())?;
+            let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
+            Ok(Command::Delete(id))
+        },
+        "edit" => {
+            let id_str = args.get(2).ok_or("Error: 'edit' command requires a task ID.".to_string())?;
+            let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
+             let description = args.get(3).cloned().ok_or("Error: 'edit' command requires a new description.".to_string())?;
+            Ok(Command::Edit(id, description))
+        },
         _ => Err(format!("Error: Unknown command '{}'", command_str)),
     }
 }
@@ -74,5 +90,8 @@ fn print_usage() {
     println!("  list              List all tasks");
     println!("  add “<desc>”      Add a new task");
     println!("  done <ID>         Complete a task by its ID");
+    println!("  undone <ID>       Mark a task as incomplete by its ID");
+    println!("  delete <ID>       Delete a task by its ID");
+    println!("  edit <ID> <desc>  Edit a task by its ID");
 }
 

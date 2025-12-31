@@ -32,16 +32,21 @@ class RustTodoRepository(context: Context) : TodoRepository {
     }
 
     override suspend fun deleteTask(task: Task) {
-        // Not implemented in Rust JNI yet
-        Log.w("RustTodoRepository", "Delete not supported by Rust backend yet")
+        Log.d("RustTodoRepository", "Deleting task id: ${task.id}")
+        RustBindings.delete(task.id.toLong())
+        refreshTasks()
     }
 
     override suspend fun updateTask(task: Task) {
+        Log.d("RustTodoRepository", "Updating task id: ${task.id}")
+        RustBindings.edit(task.id.toLong(), task.description)
+        val id = task.id.toLong()
         if (task.completed) {
-            Log.d("RustTodoRepository", "Completing task id: ${task.id}")
-            RustBindings.complete(task.id.toLong()) // ID is 1-based index
-            refreshTasks()
+             RustBindings.complete(id)
+        } else {
+             RustBindings.uncomplete(id)
         }
+        refreshTasks()
     }
 
     override suspend fun getVersion(): String {

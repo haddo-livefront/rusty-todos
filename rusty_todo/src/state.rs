@@ -1,4 +1,4 @@
-use crate::{Task, add_task, complete_task, save_tasks, TodoError, Command, CommandResult};
+use crate::{Task, add_task, complete_task, uncomplete_task, delete_task, edit_task, save_tasks, TodoError, Command, CommandResult};
 
 // --- STATE MACHINE PATTERN ---
 
@@ -39,6 +39,9 @@ impl AppContext {
             Command::List => self.transition_to(Box::new(ListState)),
             Command::Add(description) => self.transition_to(Box::new(AddState { description })),
             Command::Complete(id) => self.transition_to(Box::new(CompleteState { id })),
+            Command::Uncomplete(id) => self.transition_to(Box::new(UncompleteState { id })),
+            Command::Delete(id) => self.transition_to(Box::new(DeleteState { id })),
+            Command::Edit(id, description) => self.transition_to(Box::new(EditState { id, description })),
             Command::Version => self.transition_to(Box::new(VersionState)),
         }
 
@@ -120,6 +123,70 @@ impl AppState for CompleteState {
 
     fn name(&self) -> &str {
         "Complete"
+    }
+}
+
+/// State for marking a task as incomplete
+pub struct UncompleteState {
+    pub id: usize,
+}
+
+impl AppState for UncompleteState {
+    fn handle(&self, context: &mut AppContext) -> Result<CommandResult, TodoError> {
+        uncomplete_task(context.tasks_mut(), self.id)?;
+        context.transition_to(Box::new(SavingState {
+            message: "Task marked as incomplete.".to_string(),
+        }));
+        
+        let new_state = std::mem::replace(&mut context.state, Box::new(CompletedState));
+        new_state.handle(context)
+    }
+
+    fn name(&self) -> &str {
+        "Uncomplete"
+    }
+}
+
+/// State for deleting a task
+pub struct DeleteState {
+    pub id: usize,
+}
+
+impl AppState for DeleteState {
+    fn handle(&self, context: &mut AppContext) -> Result<CommandResult, TodoError> {
+        delete_task(context.tasks_mut(), self.id)?;
+        context.transition_to(Box::new(SavingState {
+            message: "Task deleted.".to_string(),
+        }));
+        
+        let new_state = std::mem::replace(&mut context.state, Box::new(CompletedState));
+        new_state.handle(context)
+    }
+
+    fn name(&self) -> &str {
+        "Delete"
+    }
+}
+
+/// State for editing a task
+pub struct EditState {
+    pub id: usize,
+    pub description: String,
+}
+
+impl AppState for EditState {
+    fn handle(&self, context: &mut AppContext) -> Result<CommandResult, TodoError> {
+        edit_task(context.tasks_mut(), self.id, self.description.clone())?;
+        context.transition_to(Box::new(SavingState {
+            message: "Task updated.".to_string(),
+        }));
+        
+        let new_state = std::mem::replace(&mut context.state, Box::new(CompletedState));
+        new_state.handle(context)
+    }
+
+    fn name(&self) -> &str {
+        "Edit"
     }
 }
 

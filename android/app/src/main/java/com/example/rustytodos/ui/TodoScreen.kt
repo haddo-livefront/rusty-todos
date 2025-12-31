@@ -1,6 +1,7 @@
 package com.example.rustytodos.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -75,6 +76,7 @@ fun TodoApp(
             version = uiState.version,
             onTaskChecked = viewModel::toggleTaskCompletion,
             onTaskDeleted = viewModel::deleteTask,
+            onTaskEdited = viewModel::editTask,
             modifier = Modifier.padding(innerPadding)
         )
 
@@ -97,8 +99,10 @@ fun TodoList(
     version: String,
     onTaskChecked: (Task, Boolean) -> Unit,
     onTaskDeleted: (Task) -> Unit,
+    onTaskEdited: (Task, String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showEditDialog by remember { mutableStateOf<Task?>(null) }
     Column(modifier = modifier.fillMaxSize()) {
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(
@@ -143,12 +147,24 @@ fun TodoList(
                 dismissContent = {
                     TaskItem(
                         task = task,
-                        onCheckedChange = { isChecked -> onTaskChecked(task, isChecked) }
+                        onCheckedChange = { isChecked -> onTaskChecked(task, isChecked) },
+                        onTaskClick = { showEditDialog = task }
                     )
                 }
             )
             Divider()
         }
+    }
+    
+    if (showEditDialog != null) {
+        EditTaskDialog(
+            task = showEditDialog!!,
+            onDismiss = { showEditDialog = null },
+            onConfirm = { newDesc ->
+                onTaskEdited(showEditDialog!!, newDesc)
+                showEditDialog = null
+            }
+        )
     }
     
     if (version.isNotEmpty()) {
@@ -167,11 +183,13 @@ fun TodoList(
 @Composable
 fun TaskItem(
     task: Task,
-    onCheckedChange: (Boolean) -> Unit
+    onCheckedChange: (Boolean) -> Unit,
+    onTaskClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onTaskClick)
             .background(MaterialTheme.colorScheme.surface)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -217,6 +235,45 @@ fun AddTaskDialog(
                 }
             ) {
                 Text("Add")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun EditTaskDialog(
+    task: Task,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    var text by remember { mutableStateOf(task.description) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Edit Task") },
+        text = {
+            TextField(
+                value = text,
+                onValueChange = { text = it },
+                label = { Text("Description") },
+                singleLine = true
+            )
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    if (text.isNotBlank()) {
+                        onConfirm(text)
+                    }
+                }
+            ) {
+                Text("Save")
             }
         },
         dismissButton = {
