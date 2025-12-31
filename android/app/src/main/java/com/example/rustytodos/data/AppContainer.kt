@@ -8,6 +8,6 @@ interface AppContainer {
 
 class AppDataContainer(private val context: Context) : AppContainer {
     override val todoRepository: TodoRepository by lazy {
-        OfflineTodoRepository(AppDatabase.getDatabase(context).taskDao())
+        RustTodoRepository(context)
     }
 }
