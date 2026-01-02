@@ -1,3 +1,47 @@
+# High level flow of the project
+
+```shell
++-------------------------------------------------------------------+
+|                  Project Components                               |
+|                                                                   |
+|   +--------------------------+     +--------------------------+   |
+|   |           Rust           |     |         Android          |   |
+|   |                          |     |                          |   |
+|   |      +------------+      |     |      +------------+      |   |
+|   |      |    Rust    |      |     |      |   Kotlin   |      |   |
+|   |      |            |      |     |      |  Android   |      |   |
+|   |      +------+-----+      |     |      +------+-----+      |   |
+|   |             |            |     |             |            |   |
+|   |             v            |     |             v            |   |
+|   |      +------------+      |     |      +------------+      |   |
+|   |      | Compilation|      |     |      |     NDK    |      |   |
+|   |      |     >_     |      |     |      |     JNI    |      |   |
+|   |      +------+-----+      |     |      +------+-----+      |   |
+|   |             |            |     |             |            |   |
+|   |             v            |     |             v            |   |
+|   |      +------------+      |     |      +------------+      |   |
+|   |      |  Targets   |----------->|      |  JNI Libs  |      |   |
+|   |      |            |  generates |      |            |      |   |
+|   |      +------------+      |     |      +------------+      |   |
+|   |                          |     |                          |   |
+|   +--------------------------+     +--------------------------+   |
+|                                                                   |
++-------------------------------------------------------------------+
+```
+
+- Rust compilation takes place in the first place.
+- JNI artifacts (libraries) are generated for different android cpu architectures and instruction sets.
+- These artifacts (extension .so) should be placed in jniLibs folder inside the Android Project.
+- Android then consumes them via Java Native Interface (JNI).
+
+# Requirements
+
+- Android SDK and NDK installed.
+- ANDROID_HOME env variable pointing to the Android Sdk location
+- Android NDK version should match the one inside the `.cargo/config.toml` file.
+- Rust latest edition. 
+- IDE and Editor of preference.
+
 ## 1. Cross-compilation setup for a mac machine
 
 - Create a `.cargo/config.toml` file in the root of your rust project that will expose the JNI for use on Android
