@@ -41,7 +41,7 @@ class TodoViewModel(private val todoRepository: TodoRepository) : ViewModel() {
 
     fun addTask(description: String) {
         viewModelScope.launch {
-            todoRepository.insertTask(Task(description = description))
+            todoRepository.insertTask(Task(id = "",description = description))
         }
     }
 

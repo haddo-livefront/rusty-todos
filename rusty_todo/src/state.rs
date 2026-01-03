@@ -107,12 +107,12 @@ impl AppState for AddState {
 
 /// State for completing a task
 pub struct CompleteState {
-    pub id: usize,
+    pub id: String,
 }
 
 impl AppState for CompleteState {
     fn handle(&self, context: &mut AppContext) -> Result<CommandResult, TodoError> {
-        complete_task(context.tasks_mut(), self.id)?;
+        complete_task(context.tasks_mut(), self.id.clone())?;
         context.transition_to(Box::new(SavingState {
             message: "Task marked as complete.".to_string(),
         }));
@@ -128,12 +128,12 @@ impl AppState for CompleteState {
 
 /// State for marking a task as incomplete
 pub struct UncompleteState {
-    pub id: usize,
+    pub id: String,
 }
 
 impl AppState for UncompleteState {
     fn handle(&self, context: &mut AppContext) -> Result<CommandResult, TodoError> {
-        uncomplete_task(context.tasks_mut(), self.id)?;
+        uncomplete_task(context.tasks_mut(), self.id.clone())?;
         context.transition_to(Box::new(SavingState {
             message: "Task marked as incomplete.".to_string(),
         }));
@@ -149,12 +149,12 @@ impl AppState for UncompleteState {
 
 /// State for deleting a task
 pub struct DeleteState {
-    pub id: usize,
+    pub id: String,
 }
 
 impl AppState for DeleteState {
     fn handle(&self, context: &mut AppContext) -> Result<CommandResult, TodoError> {
-        delete_task(context.tasks_mut(), self.id)?;
+        delete_task(context.tasks_mut(), self.id.clone())?;
         context.transition_to(Box::new(SavingState {
             message: "Task deleted.".to_string(),
         }));
@@ -170,13 +170,13 @@ impl AppState for DeleteState {
 
 /// State for editing a task
 pub struct EditState {
-    pub id: usize,
+    pub id: String,
     pub description: String,
 }
 
 impl AppState for EditState {
     fn handle(&self, context: &mut AppContext) -> Result<CommandResult, TodoError> {
-        edit_task(context.tasks_mut(), self.id, self.description.clone())?;
+        edit_task(context.tasks_mut(), self.id.clone(), self.description.clone())?;
         context.transition_to(Box::new(SavingState {
             message: "Task updated.".to_string(),
         }));

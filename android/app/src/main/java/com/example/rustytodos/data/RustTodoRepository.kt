@@ -33,18 +33,18 @@ class RustTodoRepository(context: Context) : TodoRepository {
 
     override suspend fun deleteTask(task: Task) {
         Log.d("RustTodoRepository", "Deleting task id: ${task.id}")
-        RustBindings.delete(task.id.toLong())
+        RustBindings.delete(task.id)
         refreshTasks()
     }
 
     override suspend fun updateTask(task: Task) {
         Log.d("RustTodoRepository", "Updating task id: ${task.id}")
-        RustBindings.edit(task.id.toLong(), task.description)
+        RustBindings.edit(task.id, task.description)
         refreshTasks()
     }
 
     override suspend fun markTask(task: Task) {
-        val id = task.id.toLong()
+        val id = task.id
         if (task.completed) {
             RustBindings.complete(id)
         } else {
@@ -73,7 +73,7 @@ class RustTodoRepository(context: Context) : TodoRepository {
             for (i in 0 until jsonArray.length()) {
                 val obj = jsonArray.getJSONObject(i)
                 tasks.add(Task(
-                    id = i + 1, // 1-based ID to match Rust CLI behavior
+                    id = obj.optString("id") ?: (i + 1).toString(), // Fallback if ID missing
                     description = obj.getString("description"),
                     completed = obj.getBoolean("completed")
                 ))

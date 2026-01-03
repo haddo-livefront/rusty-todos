@@ -7,7 +7,7 @@ pub enum TodoError {
     InvalidCommand(String),
     MissingArgument(String),
     InvalidId(String),
-    TaskNotFound(usize),
+    TaskNotFound(String),
 }
 
 impl fmt::Display for TodoError {

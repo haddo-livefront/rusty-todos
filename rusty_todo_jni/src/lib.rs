@@ -1,7 +1,7 @@
 use jni::JNIEnv;
 use jni::objects::{JClass, JString};
-use jni::sys::{jstring, jint, jlong};
-use std::ffi::{CStr, CString};
+use jni::sys::{jstring};
+use std::ffi::{CString};
 use rusty_todo::{AppContext, load_tasks, Command, CommandResult};
 use std::sync::Mutex;
 use lazy_static::lazy_static;
@@ -80,13 +80,12 @@ pub extern "system" fn Java_com_example_rustytodos_RustBindings_add(
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "system" fn Java_com_example_rustytodos_RustBindings_complete(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
-    id: jlong,
+    id: JString,
 ) -> jstring {
-    // Cast jlong (i64) to usize. Be careful with overflow/casting.
-    let id_usize = id as usize;
-    let output = execute_command(Command::Complete(id_usize));
+    let id: String = env.get_string(&id).expect("Couldn't get java string!").into();
+    let output = execute_command(Command::Complete(id));
     let output_ptr = CString::new(output).unwrap();
     env.new_string(output_ptr.to_str().unwrap()).expect("Couldn't create java string!").into_raw()
 }
@@ -94,13 +93,12 @@ pub extern "system" fn Java_com_example_rustytodos_RustBindings_complete(
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "system" fn Java_com_example_rustytodos_RustBindings_uncomplete(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
-    id: jlong,
+    id: JString,
 ) -> jstring {
-    // Cast jlong (i64) to usize. Be careful with overflow/casting.
-    let id_usize = id as usize;
-    let output = execute_command(Command::Uncomplete(id_usize));
+    let id: String = env.get_string(&id).expect("Couldn't get java string!").into();
+    let output = execute_command(Command::Uncomplete(id));
     let output_ptr = CString::new(output).unwrap();
     env.new_string(output_ptr.to_str().unwrap()).expect("Couldn't create java string!").into_raw()
 }
@@ -119,12 +117,12 @@ pub extern "system" fn Java_com_example_rustytodos_RustBindings_version(
 #[allow(non_snake_case)]
 #[no_mangle]
 pub extern "system" fn Java_com_example_rustytodos_RustBindings_delete(
-    env: JNIEnv,
+    mut env: JNIEnv,
     _class: JClass,
-    id: jlong,
+    id: JString,
 ) -> jstring {
-    let id_usize = id as usize;
-    let output = execute_command(Command::Delete(id_usize));
+    let id: String = env.get_string(&id).expect("Couldn't get java string!").into();
+    let output = execute_command(Command::Delete(id));
     let output_ptr = CString::new(output).unwrap();
     env.new_string(output_ptr.to_str().unwrap()).expect("Couldn't create java string!").into_raw()
 }
@@ -134,12 +132,12 @@ pub extern "system" fn Java_com_example_rustytodos_RustBindings_delete(
 pub extern "system" fn Java_com_example_rustytodos_RustBindings_edit(
     mut env: JNIEnv,
     _class: JClass,
-    id: jlong,
+    id: JString,
     desc: JString,
 ) -> jstring {
-    let id_usize = id as usize;
+    let id: String = env.get_string(&id).expect("Couldn't get java string!").into();
     let desc: String = env.get_string(&desc).expect("Couldn't get java string!").into();
-    let output = execute_command(Command::Edit(id_usize, desc));
+    let output = execute_command(Command::Edit(id, desc));
     let output_ptr = CString::new(output).unwrap();
     env.new_string(output_ptr.to_str().unwrap()).expect("Couldn't create java string!").into_raw()
 }

@@ -4,10 +4,10 @@ object RustBindings {
     external fun init(path: String)
     external fun list(): String
     external fun add(desc: String): String
-    external fun complete(id: Long): String
-    external fun delete(id: Long): String
-    external fun edit(id: Long, desc: String): String
-    external fun uncomplete(id: Long): String
+    external fun complete(id: String): String
+    external fun delete(id: String): String
+    external fun edit(id: String, desc: String): String
+    external fun uncomplete(id: String): String
     external fun version(): String
     // Loads the native library on initialization
     // The name passed as argument should map to the

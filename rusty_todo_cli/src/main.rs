@@ -59,24 +59,20 @@ fn parse_args(args: &[String]) -> Result<Command, String> {
             Ok(Command::Add(description))
         },
         "done" => {
-            let id_str = args.get(2).ok_or("Error: 'done' command requires a task ID.".to_string())?;
-            let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
+            let id = args.get(2).cloned().ok_or("Error: 'done' command requires a task ID.".to_string())?;
             Ok(Command::Complete(id))
         },
         "undone" => {
-            let id_str = args.get(2).ok_or("Error: 'undone' command requires a task ID.".to_string())?;
-            let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
+            let id = args.get(2).cloned().ok_or("Error: 'undone' command requires a task ID.".to_string())?;
             Ok(Command::Uncomplete(id))
         },
         "delete" => {
-            let id_str = args.get(2).ok_or("Error: 'delete' command requires a task ID.".to_string())?;
-            let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
+            let id = args.get(2).cloned().ok_or("Error: 'delete' command requires a task ID.".to_string())?;
             Ok(Command::Delete(id))
         },
         "edit" => {
-            let id_str = args.get(2).ok_or("Error: 'edit' command requires a task ID.".to_string())?;
-            let id = id_str.parse::<usize>().map_err(|_| "Error: Invalid task ID. Please provide a number.".to_string())?;
-             let description = args.get(3).cloned().ok_or("Error: 'edit' command requires a new description.".to_string())?;
+            let id = args.get(2).cloned().ok_or("Error: 'edit' command requires a task ID.".to_string())?;
+            let description = args.get(3).cloned().ok_or("Error: 'edit' command requires a new description.".to_string())?;
             Ok(Command::Edit(id, description))
         },
         _ => Err(format!("Error: Unknown command '{}'", command_str)),
