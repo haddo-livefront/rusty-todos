@@ -39,3 +39,6 @@ CompleteState - Terminal state indicating successful completion
 
 ## State Flow
 Idle -> [List/Add/Complete] -> Saving -> Completed
+
+## Disclaimer
+This is a toy project for explorative & learning purposes and not meant for use. Don't take it seriously :)
