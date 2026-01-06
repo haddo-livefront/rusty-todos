@@ -1,22 +1,32 @@
 [
   {
+    "id": "1d97b577-91da-4ec3-81ce-8c2bee594a78",
     "description": "Learn rust deeply",
     "completed": true
   },
   {
+    "id": "0922570c-f5d1-43c7-a55e-ed6a31d81861",
     "description": "Learn rust deeply",
     "completed": true
   },
   {
+    "id": "cada5666-e47b-4b7f-aa52-49fe3ccb6c72",
     "description": "Buy food items",
     "completed": true
   },
   {
+    "id": "911ed30e-3f30-4a87-80f4-c4a73f784b8d",
     "description": "Buy groceries",
     "completed": true
   },
   {
+    "id": "51a47233-a10e-4ee5-b4e8-6e685ccaeabc",
     "description": "Learn system design",
     "completed": true
+  },
+  {
+    "id": "a4e73637-bb18-4ef3-af85-9578b2dc8ed5",
+    "description": "Buy groceries",
+    "completed": false
   }
 ]
